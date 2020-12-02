@@ -1,2 +1,5 @@
-# python-learning
-Simple tests for python snippets
+# Python Learning
+Simple experiments with python.
+- Flask
+- MySQL
+- RESTful API
