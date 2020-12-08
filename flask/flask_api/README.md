@@ -1,7 +1,9 @@
-# Flask Basic
+# Flask API
 
 ## Features:
-- Basic flask application
-- Basic SQLite setup
-- Basic Flask login
-- Basic api
+- Copy from flask_basic
+- Register user
+- Show User
+- HttpBasicAuth implementation
+- Testing with HTTPie
+- SSL: testing
