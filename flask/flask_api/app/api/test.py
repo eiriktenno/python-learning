@@ -52,3 +52,9 @@ def verify_password(email, password):
         return False
     g.user = user
     return True
+
+
+@api.route('/users/')
+@auth.login_required()
+def list_users():
+    return "List: Users"
