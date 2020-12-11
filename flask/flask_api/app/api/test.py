@@ -3,6 +3,7 @@ from . import api
 from ..models import User
 from .. import db
 from flask_httpauth import HTTPBasicAuth
+from ..models import User
 
 
 auth = HTTPBasicAuth()
@@ -33,8 +34,8 @@ def register():
 # HTTPIE: http --json localhost:5000/api/ "email=<input>" "password=<input>"
 @api.route('/load_user/', methods=['POST'])
 def load_user():
-    email = request.json.get('username')
-    user = User.query.filter_by(email=email).first()
+    username = request.json.get('username')
+    user = User.query.filter_by(username=username).first()
     return jsonify(user.to_json(user))
 
 
@@ -54,7 +55,20 @@ def verify_password(email, password):
     return True
 
 
+# Return list of registered usernames
+# HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/usernames/
+@api.route('/usernames/')
+@auth.login_required()
+def list_usernames():
+    username_list = [i.username for i in User.query.all()]
+    return jsonify(username_list)
+
+
+# Return a list of users and user info. Add pagination?
 @api.route('/users/')
 @auth.login_required()
 def list_users():
-    return "List: Users"
+    user_list = [
+
+    ]
+    return "List of users"
