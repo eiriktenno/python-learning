@@ -28,7 +28,7 @@ def register():
     user.password = password
     db.session.add(user)
     db.session.commit()
-    return jsonify(user.to_json(user))
+    return jsonify(user.to_json())
 
 
 # HTTPIE: http --json localhost:5000/api/ "email=<input>" "password=<input>"
@@ -36,7 +36,7 @@ def register():
 def load_user():
     username = request.json.get('username')
     user = User.query.filter_by(username=username).first()
-    return jsonify(user.to_json(user))
+    return jsonify(user.to_json())
 
 
 # HTTPIE: http --auth <email>:<password> --json localhost:5000/api/test
@@ -69,6 +69,6 @@ def list_usernames():
 @auth.login_required()
 def list_users():
     user_list = [
-
+        user.to_json() for user in User.query.all()
     ]
-    return "List of users"
+    return jsonify(user_list)

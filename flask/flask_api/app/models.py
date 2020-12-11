@@ -22,10 +22,10 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    @staticmethod
     def to_json(self):
         json_user = {
-            'username': self.username
+            'username': self.username,
+            'email': self.email
         }
         return json_user
 
@@ -35,6 +35,12 @@ class User(UserMixin, db.Model):
         if username is None:
             raise ValidationError('Empty username')
         return User(username=username)
+
+    # def serialize(self):
+    #     return {
+    #         'username': self.username,
+    #         'email': self.email
+    #     }
 
 
 class AnonymousUser(AnonymousUserMixin):
