@@ -4,6 +4,7 @@ from ..models import User
 from .. import db
 from flask_httpauth import HTTPBasicAuth
 from ..models import User
+from ..decorators import permission_required
 
 
 auth = HTTPBasicAuth()
@@ -65,8 +66,9 @@ def list_usernames():
 
 
 # Return a list of users and user info. Add pagination?
-@api.route('/users/')
 @auth.login_required()
+@api.route('/users/')
+@permission_required('admin', auth.current_user)
 def list_users():
     user_list = [
         user.to_json() for user in User.query.all()
