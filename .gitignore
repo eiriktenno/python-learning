@@ -4,3 +4,5 @@
 start.bat
 *.sqlite
 
+*\migrations*
+

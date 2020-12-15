@@ -10,6 +10,7 @@ class User(UserMixin, db.Model):
 	username = db.Column(db.String(128), index=True, unique=True)
 	email = db.Column(db.String(128), index=True, unique=True)
 	password_hash = db.Column(db.String(128))
+	role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), index=True)
 
 	@property
 	def password(self):
@@ -36,6 +37,14 @@ class User(UserMixin, db.Model):
 			raise ValidationError('Empty username')
 		return User(username=username)
 
+	def get_role(self):
+		print("Role checking")
+		if self.role is not None:
+			return self.role.name
+		else:
+			return ''
+
+
 	# def serialize(self):
 	#     return {
 	#         'username': self.username,
@@ -59,6 +68,7 @@ class Role(db.Model):
 	__tablename__ = 'roles'
 	id = db.Column(db.Integer, index=True, primary_key=True)
 	name = db.Column(db.String(128), index=True, unique=True)
+	users = db.relationship('User', backref='role', lazy='dynamic')
 
 	@staticmethod
 	def insert_roles():

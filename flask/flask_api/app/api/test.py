@@ -10,6 +10,18 @@ from ..decorators import permission_required
 auth = HTTPBasicAuth()
 
 
+# Role check for HTTPAuth
+@auth.get_user_roles
+def get_user_roles(user):
+    print('Performing check...')
+    #print('Request: ', request.json.get())
+    print('Username: ', user)
+    print('Email: ', user.username)
+    user = User.query.filter_by(email=user.username).first()
+    print(user)
+    return user.get_role()
+
+
 # HTTPIE: http --json localhost:5000/api/ "username=<input>" "email=<input>" "password=<input>"
 @api.route('/register/', methods=['POST'])
 def register():
@@ -66,9 +78,8 @@ def list_usernames():
 
 
 # Return a list of users and user info. Add pagination?
-@auth.login_required()
 @api.route('/users/')
-@permission_required('admin', auth.current_user)
+@auth.login_required(role='admin')
 def list_users():
     user_list = [
         user.to_json() for user in User.query.all()
