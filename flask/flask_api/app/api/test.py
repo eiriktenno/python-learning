@@ -13,12 +13,7 @@ auth = HTTPBasicAuth()
 # Role check for HTTPAuth
 @auth.get_user_roles
 def get_user_roles(user):
-    print('Performing check...')
-    #print('Request: ', request.json.get())
-    print('Username: ', user)
-    print('Email: ', user.username)
     user = User.query.filter_by(email=user.username).first()
-    print(user)
     return user.get_role()
 
 

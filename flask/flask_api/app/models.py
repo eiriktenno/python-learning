@@ -38,11 +38,10 @@ class User(UserMixin, db.Model):
 		return User(username=username)
 
 	def get_role(self):
-		print("Role checking")
 		if self.role is not None:
 			return self.role.name
 		else:
-			return ''
+			return None
 
 
 	# def serialize(self):
