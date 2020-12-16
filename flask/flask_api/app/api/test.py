@@ -1,4 +1,4 @@
-from flask import jsonify, request, current_app, url_for,abort, g
+from flask import jsonify, request, current_app, url_for, abort, g
 from . import api
 from ..models import User
 from .. import db
@@ -90,3 +90,24 @@ def list_roles():
         role.to_json() for role in Role.query.all()
     ]
     return jsonify(role_list)
+
+
+# Post - List
+@api.route('/posts/')
+@auth.login_required(role='admin')
+def list_posts():
+    pass
+
+
+# Post - New
+@api.route('/new_post/')
+@auth.login_required(role='admin')
+def new_post():
+    pass
+
+
+# Post - Moderate
+@api.route('/edit_post/')
+@auth.login_required(role='admin')
+def edit_post():
+    pass

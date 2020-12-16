@@ -1,5 +1,6 @@
 from . import db, login_manager
 from app.exceptions import ValidationError
+from datetime import datetime
 from flask_login import UserMixin, AnonymousUserMixin, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -44,13 +45,6 @@ class User(UserMixin, db.Model):
 			return None
 
 
-	# def serialize(self):
-	#     return {
-	#         'username': self.username,
-	#         'email': self.email
-	#     }
-
-
 class AnonymousUser(AnonymousUserMixin):
 	pass
 
@@ -88,3 +82,13 @@ class Permission(db.Model):
 	__tablename__ = 'permissions'
 	id = db.Column(db.Integer, index=True, primary_key=True)
 	name = db.Column(db.String(128), index=True, unique=True)
+
+
+class Post(db.Model):
+	__tablename__ = 'posts'
+	id = db.Column(db.Integer, index=True, primary_key=True)
+	title = db.Column(db.String(128), index=True, unique=True)
+	slug = db.Column(db.String(128), index=True, unique=True)
+	body = db.Column(db.Text)
+	timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+	image = db.Column(db.String())
