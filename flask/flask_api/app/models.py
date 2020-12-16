@@ -69,9 +69,16 @@ class Role(db.Model):
 	name = db.Column(db.String(128), index=True, unique=True)
 	users = db.relationship('User', backref='role', lazy='dynamic')
 
+	def to_json(self):
+		json_role = {
+			'name': self.name,
+		}
+		return json_role
+
 	@staticmethod
 	def insert_roles():
 		admin = Role(name='admin')
+
 		moderator = Role(name='moderator')
 		user = Role(name='user')
 		db.session.add_all([admin, moderator, user])

@@ -3,7 +3,7 @@ from . import api
 from ..models import User
 from .. import db
 from flask_httpauth import HTTPBasicAuth
-from ..models import User
+from ..models import User, Role
 from ..decorators import permission_required
 
 
@@ -80,3 +80,13 @@ def list_users():
         user.to_json() for user in User.query.all()
     ]
     return jsonify(user_list)
+
+
+# Return a list of roles
+@api.route('/roles/')
+@auth.login_required(role='admin')
+def list_roles():
+    role_list = [
+        role.to_json() for role in Role.query.all()
+    ]
+    return jsonify(role_list)
