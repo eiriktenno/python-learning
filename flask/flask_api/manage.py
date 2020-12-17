@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Role
+from app.models import User, Role, Post, Category, Tag
 from flask_migrate import Migrate, upgrade, MigrateCommand
 from flask_script import Manager, Shell, Server
 
