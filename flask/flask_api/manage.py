@@ -13,7 +13,7 @@ server = Server(host='0.0.0.0', port=5000)
 @app.context_processor
 def make_shell_context():
     return dict(
-        app=app, db=db, User=User, Role=Role
+        app=app, db=db, User=User, Role=Role, Post=Post, Category=Category, Tag=Tag
     )
 
 

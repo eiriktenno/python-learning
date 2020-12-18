@@ -38,8 +38,8 @@ class User(UserMixin, db.Model):
 		json_user = {
 			'username': self.username,
 			'email': self.email,
-			'role': self.role.to_json(),
-			'posts': self.posts.to_json()
+			'role': self.role.to_json() if self.role is not None else '',
+			'posts': [post.to_json() for post in self.posts]
 		}
 		return json_user
 
@@ -112,7 +112,12 @@ class Post(db.Model):
 
 	def to_json(self):
 		json_post = {
-
+			'title': self.title,
+			'slug': self.slug,
+			'body': self.body,
+			'timestamp': self.timestamp,
+			'image': self.image,
+			'author': self.author.username
 		}
 		return json_post
 
