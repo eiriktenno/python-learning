@@ -126,6 +126,7 @@ class Post(db.Model):
 		pass
 
 
+# http --json localhost:5000/api/categories/
 class Category(db.Model):
 	__tablename__ = 'categories'
 	id = db.Column(db.Integer, index=True, primary_key=True)
@@ -138,10 +139,10 @@ class Category(db.Model):
 
 	# Custom Template: Settings for custom template or not.
 	custom_template = db.Column(db.Boolean, default=False)
-	custom_template_url = db.Column(db.String(128))
+	custom_template_url = db.Column(db.String(128), default='')
 
 	# list for children to category
-	children = db.relationship(
+	childes = db.relationship(
 		'Category',
 		secondary=category_tree_table,
 		primaryjoin=(category_tree_table.c.parent_id == id),
@@ -151,7 +152,15 @@ class Category(db.Model):
 	)
 
 	def to_json(self):
-		pass
+		json_category = {
+			'priority': self.priority,
+			'display_name': self.display_name,
+			'custom_template': self.custom_template,
+			'custom_template_url': self.custom_template_url,
+			'childes': [child.display_name for child in self.childes],
+			'parents': [parent.display_name for parent in self.parents]
+		}
+		return json_category
 
 	@staticmethod
 	def generate_fake_data(quantity):

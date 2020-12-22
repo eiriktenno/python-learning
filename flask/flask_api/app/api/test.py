@@ -3,14 +3,14 @@ from . import api
 from ..models import User
 from .. import db
 from flask_httpauth import HTTPBasicAuth
-from ..models import User, Role
+from ..models import User, Role, Category, Post, Permission, Tag
 from ..decorators import permission_required
 
 
 auth = HTTPBasicAuth()
 
 
-# Role check for HTTPAuth
+# Role check for HTTPAuthe
 @auth.get_user_roles
 def get_user_roles(user):
     user = User.query.filter_by(email=user.username).first()
@@ -111,3 +111,12 @@ def new_post():
 @auth.login_required(role='admin')
 def edit_post():
     pass
+
+
+# Category - Navbar item
+@api.route('/categories/')
+def list_categories():
+    category_list = [
+        category.to_json() for category in Category.query.all()
+    ]
+    return jsonify(category_list)
