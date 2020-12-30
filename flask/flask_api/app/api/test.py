@@ -54,6 +54,11 @@ def get_resources():
     return jsonify({'data': 'Hello, %s' % g.user.username})
 
 
+@api.route('/testapi/')
+def test_api():
+    return {'result': "ERPA DERPA"}
+
+
 @auth.verify_password
 def verify_password(email, password):
     user = User.query.filter_by(email=email).first()
