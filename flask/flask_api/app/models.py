@@ -56,6 +56,10 @@ class User(UserMixin, db.Model):
 		else:
 			return None
 
+	@staticmethod
+	def generate_fake_data(quantity):
+		pass
+
 
 class AnonymousUser(AnonymousUserMixin):
 	pass
@@ -96,6 +100,10 @@ class Permission(db.Model):
 	name = db.Column(db.String(128), index=True, unique=True)
 
 	def to_json(self):
+		pass
+
+	@staticmethod
+	def generate_fake_data(quantity):
 		pass
 
 
@@ -178,3 +186,7 @@ class Tag(db.Model):
 	@staticmethod
 	def generate_fake_data(quantity):
 		pass
+
+
+def generate_fake_data():
+	pass
