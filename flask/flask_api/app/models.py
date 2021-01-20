@@ -39,7 +39,8 @@ class User(UserMixin, db.Model):
 			'username': self.username,
 			'email': self.email,
 			'role': self.role.to_json() if self.role is not None else '',
-			'posts': [post.to_json() for post in self.posts]
+			'posts': [post.to_json() for post in self.posts],
+			'categories': ''
 		}
 		return json_user
 
@@ -81,7 +82,8 @@ class Role(db.Model):
 
 	def to_json(self):
 		json_role = {
-			'name': self.name
+			'name': self.name,
+			'categories': ''
 		}
 		return json_role
 

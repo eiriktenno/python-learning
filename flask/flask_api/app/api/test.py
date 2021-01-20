@@ -50,7 +50,7 @@ def register():
 
 
 # HTTPIE: http --json localhost:5000/api/ "email=<input>" "password=<input>"
-@api.route('/load_user/', methods=['POST'])
+@api.route('/load_user/', methods=['GET', 'POST'])
 def load_user():
 	username = request.json.get('username')
 	user = User.query.filter_by(username=username).first()
@@ -58,13 +58,13 @@ def load_user():
 
 
 # HTTPIE: http --auth <email>:<password> --json localhost:5000/api/test
-@api.route('/test')
+@api.route('/test', methods=['GET'])
 @auth.login_required()
 def get_resources():
 	return jsonify({'data': 'Hello, %s' % g.user.username})
 
 
-@api.route('/testapi/')
+@api.route('/testapi/', methods=['GET'])
 def test_api():
 	return {'result': "ERPA DERPA"}
 
@@ -80,7 +80,7 @@ def verify_password(email, password):
 
 # Return list of registered usernames
 # HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/usernames/
-@api.route('/usernames/')
+@api.route('/usernames/', methods=['GET'])
 @auth.login_required()
 def list_usernames():
 	username_list = [i.username for i in User.query.all()]
@@ -88,7 +88,7 @@ def list_usernames():
 
 
 # Return a list of users and user info. Add pagination?
-@api.route('/users/')
+@api.route('/users/', methods=['GET'])
 @auth.login_required(role='admin')
 def list_users():
 	user_list = [
@@ -98,7 +98,7 @@ def list_users():
 
 
 # Return a list of roles
-@api.route('/roles/')
+@api.route('/roles/', methods=['GET'])
 @auth.login_required(role='admin')
 def list_roles():
 	role_list = [
@@ -108,28 +108,28 @@ def list_roles():
 
 
 # Post - List
-@api.route('/posts/')
+@api.route('/posts/', methods=['GET'])
 @auth.login_required(role='admin')
 def list_posts():
 	pass
 
 
 # Post - New
-@api.route('/new_post/')
+@api.route('/new_post/', methods=['POST'])
 @auth.login_required(role='admin')
 def new_post():
 	pass
 
 
 # Post - Moderate
-@api.route('/edit_post/')
+@api.route('/edit_post/', methods=['POST'])
 @auth.login_required(role='admin')
 def edit_post():
 	pass
 
 
 # Category - Navbar item
-@api.route('/categories/')
+@api.route('/categories/', methods=['GET'])
 def list_categories():
 	category_list = [
 		category.to_json() for category in Category.query.all()
