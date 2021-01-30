@@ -1,10 +1,11 @@
-from flask import jsonify, request, current_app, url_for, abort, g
 from . import api
-from ..models import User
 from .. import db
-from flask_httpauth import HTTPBasicAuth
 from ..models import User, Role, Category, Post, Permission, Tag
-from ..decorators import permission_required
+from flask import jsonify, request, current_app, url_for, abort, g
+from flask_httpauth import HTTPBasicAuth
+from slugify import slugify
+from datetime import datetime
+
 
 '''
 API methods:
@@ -20,7 +21,7 @@ Examples
 auth = HTTPBasicAuth()
 
 
-# Role check for HTTPAuthe
+# Role check for HTTPAuth
 @auth.get_user_roles
 def get_user_roles(user):
 	user = User.query.filter_by(email=user.username).first()
@@ -111,21 +112,71 @@ def list_roles():
 @api.route('/posts/', methods=['GET'])
 @auth.login_required(role='admin')
 def list_posts():
-	pass
+	post_list = [
+		post.to_json() for post in Post.query.all()
+	]
+	return post_list
 
 
 # Post - New
+# HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/new_post/ "title=test123"
+# "body=bodytest 123231"
 @api.route('/new_post/', methods=['POST'])
 @auth.login_required(role='admin')
 def new_post():
-	pass
+	title = request.json.get('title')
+	body = request.json.get('body')
+	slug = slugify(title)
+	author = User.query.filter_by(email=auth.current_user()).first()
+	if (title is None) or (body is None):
+		abort(400)  # Missing argument
+	if Post.query.filter_by(title=title).first() is not None:
+		abort(400)  # Title already exist
+	if Post.query.filter_by(slug=slug).first() is not None:
+		abort(400)  # Slug already exist
+	post = Post(
+		title=title,
+		body=body,
+		author=author,
+		slug=slug
+	)
+	db.session.add(post)
+	db.session.commit()
+	return jsonify(post.to_json())
 
 
 # Post - Moderate
-@api.route('/edit_post/', methods=['POST'])
+@api.route('/edit_post/<slug>', methods=['POST'])
 @auth.login_required(role='admin')
-def edit_post():
-	pass
+def edit_post(slug):
+	post = Post.query.filter_by(slug=slug).first()
+	if post is None:
+		abort(400)		# Slug doesn't exist
+
+	title = request.json.get('title')
+	body = request.json.get('body')
+	slug = slugify(title)
+	date_modified = datetime.utcnow
+	moderator = User.query.filter_by(email=auth.current_user()).first()
+	image = ''
+
+	if (title is None) or (body is None):
+		abort(400)  # Missing argument
+	if Post.query.filter_by(title=title).first() is not None:
+		abort(400)  # Title already exist
+	if Post.query.filter_by(slug=slug).first() is not None:
+		abort(400)  # Slug already exist
+
+	post.title = title
+	post.body = body
+	post.moderator = moderator
+	post.slug = slug
+	post.date_modified = date_modified
+	post.image = image
+
+	db.session.add(post)
+	db.session.commit()
+	return jsonify(post.to_json())
 
 
 # Category - Navbar item

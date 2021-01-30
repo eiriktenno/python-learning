@@ -94,6 +94,7 @@ class Role(db.Model):
 		moderator = Role(name='moderator')
 		user = Role(name='user')
 		db.session.add_all([admin, moderator, user])
+		db.session.commit()
 
 
 class Permission(db.Model):
@@ -116,18 +117,22 @@ class Post(db.Model):
 	slug = db.Column(db.String(128), index=True, unique=True)
 	body = db.Column(db.Text)
 	timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+	date_modified = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 	image = db.Column(db.String())
+	moderator = db.Column(db.String(128))
 
 	author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
 	def to_json(self):
 		json_post = {
-			'title': self.title,
-			'slug': self.slug,
-			'body': self.body,
-			'timestamp': self.timestamp,
-			'image': self.image,
-			'author': self.author.username
+			'title': self.title if self.title is not None else '',
+			'slug': self.slug if self.slug is not None else '',
+			'body': self.body if self.body is not None else '',
+			'timestamp': self.timestamp if self.timestamp is not None else '',
+			'image': self.image if self.image is not None else '',
+			'author': self.author.username,
+			'date_modified': self.date_modified if self.date_modified is not None else '',
+			'moderator': self.moderator if self.moderator is not None else ''
 		}
 		return json_post
 
