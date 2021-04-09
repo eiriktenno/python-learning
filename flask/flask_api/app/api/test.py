@@ -28,6 +28,8 @@ def get_user_roles(user):
 	return user.get_role()
 
 
+# User START ---------------------------------------------------------------
+
 # HTTPIE: http --json localhost:5000/api/ "username=<input>" "email=<input>" "password=<input>"
 @api.route('/register/', methods=['POST'])
 def register():
@@ -58,6 +60,67 @@ def load_user():
 	return jsonify(user.to_json())
 
 
+# List - usernames
+# HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/usernames/
+@api.route('/usernames/', methods=['GET'])
+@auth.login_required()
+def list_usernames():
+	username_list = [i.username for i in User.query.all()]
+	return jsonify(username_list)
+
+
+# List - Users
+# Return a list of users and user info. Add pagination?
+@api.route('/users/', methods=['GET'])
+@auth.login_required(role='admin')
+def list_users():
+	user_list = [
+		user.to_json() for user in User.query.all()
+	]
+	return jsonify(user_list)
+
+
+# Edit user - User self
+@api.route('/users/edit/', methods=['POST'])
+@auth.login_required()
+def edit_user():
+	user = g.user
+
+	username = request.json.get('username')
+	password = request.json.get('password')
+	email = request.json.get('email')
+
+	if password is not None:
+		user.password = password
+
+	if (request.json.get('username') is None) or (request.json.get('email') is None):
+		abort(400)  # Missing argument
+
+	if User.query.filter_by(username=username).first() is not None:
+		abort(400)  # User already exist
+
+	if User.query.filter_by(email=email).first() is not None:
+		abort(400)  # Email already exist
+
+	return jsonify({'data': 'Hello, %s' % g.user.username})
+
+
+# Edit user - Admin
+@api.route('/users/edit/admin/')
+@auth.login_required(role='admin')
+def edit_user_admin():
+	return {'result': 'Edit User Admin'}
+
+
+# Delete user - Admin
+@api.route('/users/delete/admin/')
+@auth.login_required(role='admin')
+def delete_user_admin():
+	return {'result': 'Delete User Admin'}
+
+# User END ---------------------------------------------------------------
+
+
 # HTTPIE: http --auth <email>:<password> --json localhost:5000/api/test
 @api.route('/test', methods=['GET'])
 @auth.login_required()
@@ -79,24 +142,7 @@ def verify_password(email, password):
 	return True
 
 
-# Return list of registered usernames
-# HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/usernames/
-@api.route('/usernames/', methods=['GET'])
-@auth.login_required()
-def list_usernames():
-	username_list = [i.username for i in User.query.all()]
-	return jsonify(username_list)
-
-
-# Return a list of users and user info. Add pagination?
-@api.route('/users/', methods=['GET'])
-@auth.login_required(role='admin')
-def list_users():
-	user_list = [
-		user.to_json() for user in User.query.all()
-	]
-	return jsonify(user_list)
-
+# Roles START ---------------------------------------------------------------
 
 # Return a list of roles
 @api.route('/roles/', methods=['GET'])
@@ -107,6 +153,11 @@ def list_roles():
 	]
 	return jsonify(role_list)
 
+
+# Roles END ---------------------------------------------------------------
+
+
+# Post START ---------------------------------------------------------------
 
 # Post - List
 @api.route('/posts/', methods=['GET'])
@@ -179,6 +230,10 @@ def edit_post(slug):
 	return jsonify(post.to_json())
 
 
+# Post END ---------------------------------------------------------------
+
+# Category START ---------------------------------------------------------------
+
 # Category - Navbar item
 @api.route('/categories/', methods=['GET'])
 def list_categories():
@@ -186,3 +241,14 @@ def list_categories():
 		category.to_json() for category in Category.query.all()
 	]
 	return jsonify(category_list)
+
+# Category END ---------------------------------------------------------------
+
+
+# Tag START ---------------------------------------------------------------
+
+# Tag END ---------------------------------------------------------------
+
+# Permissions START ---------------------------------------------------------------
+
+# Permissions END ---------------------------------------------------------------
