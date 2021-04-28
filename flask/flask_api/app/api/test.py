@@ -30,6 +30,7 @@ def get_user_roles(user):
 
 # User START ---------------------------------------------------------------
 
+# _User - Register
 # HTTPIE: http --json localhost:5000/api/ "username=<input>" "email=<input>" "password=<input>"
 @api.route('/register/', methods=['POST'])
 def register():
@@ -52,6 +53,7 @@ def register():
 	return jsonify(user.to_json())
 
 
+# _User - Load User
 # HTTPIE: http --json localhost:5000/api/ "email=<input>" "password=<input>"
 @api.route('/load_user/', methods=['GET', 'POST'])
 def load_user():
@@ -60,7 +62,7 @@ def load_user():
 	return jsonify(user.to_json())
 
 
-# List - usernames
+# _User - List usernames
 # HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/usernames/
 @api.route('/usernames/', methods=['GET'])
 @auth.login_required()
@@ -69,7 +71,7 @@ def list_usernames():
 	return jsonify(username_list)
 
 
-# List - Users
+# _User - List users
 # Return a list of users and user info. Add pagination?
 @api.route('/users/', methods=['GET'])
 @auth.login_required(role='admin')
@@ -80,7 +82,7 @@ def list_users():
 	return jsonify(user_list)
 
 
-# Edit user - User self
+# _User - Edit
 @api.route('/users/edit/', methods=['POST'])
 @auth.login_required()
 def edit_user():
@@ -102,24 +104,64 @@ def edit_user():
 	if User.query.filter_by(email=email).first() is not None:
 		abort(400)  # Email already exist
 
-	return jsonify({'data': 'Hello, %s' % g.user.username})
+	user.username = username
+	user.email = email
+
+	db.session.add(user)
+	db.session.commit()
+	return jsonify(user.to_json())
 
 
-# Edit user - Admin
-@api.route('/users/edit/admin/')
+# _User - Admin Edit
+@api.route('/users/edit/admin/<user_id>', methods=['POST'])
 @auth.login_required(role='admin')
-def edit_user_admin():
-	return {'result': 'Edit User Admin'}
+def edit_user_admin(user_id):
+	user = User.query.filter_by(id=user_id).first()
+
+	if user is None:
+		abort(400)
+
+	username = request.json.get('username')
+	password = request.json.get('password')
+	email = request.json.get('email')
+
+	if password is not None:
+		user.password = password
+
+	if (request.json.get('username') is None) or (request.json.get('email') is None):
+		abort(400)  # Missing argument
+
+	if User.query.filter_by(username=username).first() is not None:
+		abort(400)  # User already exist
+
+	if User.query.filter_by(email=email).first() is not None:
+		abort(400)  # Email already exist
+
+	return jsonify({'result': '%s, has been updated.' % user.username})
 
 
-# Delete user - Admin
-@api.route('/users/delete/admin/')
+# _User - Admin delete
+@api.route('/users/delete/admin/<user_id>', methods=['POST'])
 @auth.login_required(role='admin')
-def delete_user_admin():
-	return {'result': 'Delete User Admin'}
+def delete_user_admin(user_id):
+	user = User.query.filter_by(id=user_id).first()
+	username = user.username
+
+	if user is None:
+		abort(400)
+
+	if user.role is not "admin":
+		db.session.delete(user)
+		db.session.commit()
+	else:
+		abort(400)
+
+	return {'result': 'User %s, been deleted' % username}
 
 # User END ---------------------------------------------------------------
 
+
+# TEST START ---------------------------------------------------------------
 
 # HTTPIE: http --auth <email>:<password> --json localhost:5000/api/test
 @api.route('/test', methods=['GET'])
@@ -141,10 +183,11 @@ def verify_password(email, password):
 	g.user = user
 	return True
 
+# TEST - END ---------------------------------------------------------------
 
-# Roles START ---------------------------------------------------------------
+# ROLES START ---------------------------------------------------------------
 
-# Return a list of roles
+# _Roles - List of roles
 @api.route('/roles/', methods=['GET'])
 @auth.login_required(role='admin')
 def list_roles():
@@ -153,13 +196,21 @@ def list_roles():
 	]
 	return jsonify(role_list)
 
+# _Roles - Edit Role
 
-# Roles END ---------------------------------------------------------------
+
+# _Roles - Delete Role
 
 
-# Post START ---------------------------------------------------------------
+# _Roles - Add Role
 
-# Post - List
+
+# ROLES END ---------------------------------------------------------------
+
+
+# POST START ---------------------------------------------------------------
+
+# _Post - List
 @api.route('/posts/', methods=['GET'])
 @auth.login_required(role='admin')
 def list_posts():
@@ -169,7 +220,7 @@ def list_posts():
 	return post_list
 
 
-# Post - New
+# _Post - New
 # HTTPIE: https --verify no --auth <email>:<password> --json localhost:5000/api/new_post/ "title=test123"
 # "body=bodytest 123231"
 @api.route('/new_post/', methods=['POST'])
@@ -196,7 +247,7 @@ def new_post():
 	return jsonify(post.to_json())
 
 
-# Post - Moderate
+# _Post - Moderate
 @api.route('/edit_post/<slug>', methods=['POST'])
 @auth.login_required(role='admin')
 def edit_post(slug):
@@ -230,11 +281,14 @@ def edit_post(slug):
 	return jsonify(post.to_json())
 
 
-# Post END ---------------------------------------------------------------
+# _Post - Delete
+
+
+# POST END ---------------------------------------------------------------
 
 # Category START ---------------------------------------------------------------
 
-# Category - Navbar item
+# Category - List
 @api.route('/categories/', methods=['GET'])
 def list_categories():
 	category_list = [
@@ -242,13 +296,42 @@ def list_categories():
 	]
 	return jsonify(category_list)
 
+# _Category - Edit
+
+# _Category - Delete
+
+# _Category - Add
+
 # Category END ---------------------------------------------------------------
 
 
 # Tag START ---------------------------------------------------------------
 
+# _Tag - List
+
+
+# _Tag - Add
+
+
+# _Tag - Delete
+
+
+# _Tag - Edit
+
+
 # Tag END ---------------------------------------------------------------
 
 # Permissions START ---------------------------------------------------------------
+
+# _Permissions - List
+
+
+# _Permissions - Add
+
+
+# _Permissions - Delete
+
+
+# _Permissions -  Edit
 
 # Permissions END ---------------------------------------------------------------

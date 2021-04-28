@@ -196,4 +196,13 @@ class Tag(db.Model):
 
 
 def generate_fake_data():
-	pass
+	Role.insert_roles()
+	admin_role = Role.query.filter_by(name='admin').first()
+	admin_user = User(
+		username='admin',
+		password='123456',
+		email='admin@admin.admin',
+		role=admin_role
+	)
+	db.session.add_all([admin_role, admin_user])
+	db.session.commit()

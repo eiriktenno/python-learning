@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Role, Post, Category, Tag
+from app.models import User, Role, Post, Category, Tag, generate_fake_data
 from flask_migrate import Migrate, upgrade, MigrateCommand
 from flask_script import Manager, Shell, Server
 
@@ -13,7 +13,8 @@ server = Server(host='0.0.0.0', port=5000)
 @app.context_processor
 def make_shell_context():
     return dict(
-        app=app, db=db, User=User, Role=Role, Post=Post, Category=Category, Tag=Tag
+        app=app, db=db, User=User, Role=Role, Post=Post, Category=Category, Tag=Tag,
+        generate_fake_data=generate_fake_data
     )
 
 
