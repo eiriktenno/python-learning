@@ -83,11 +83,11 @@ def list_users():
 
 
 # _User - Edit
+# http --auth <email>:<password> --json localhost:5000/api/users/edit/
 @api.route('/users/edit/', methods=['POST'])
 @auth.login_required()
 def edit_user():
 	user = g.user
-
 	username = request.json.get('username')
 	password = request.json.get('password')
 	email = request.json.get('email')
@@ -98,10 +98,12 @@ def edit_user():
 	if (request.json.get('username') is None) or (request.json.get('email') is None):
 		abort(400)  # Missing argument
 
-	if User.query.filter_by(username=username).first() is not None:
+	username_check = User.query.filter_by(username=username).first()
+	if (username_check is not None) and (username_check is not user):
 		abort(400)  # User already exist
 
-	if User.query.filter_by(email=email).first() is not None:
+	email_check = User.query.filter_by(email=email).first()
+	if (email_check is not None) and (email_check is not user):
 		abort(400)  # Email already exist
 
 	user.username = username
@@ -113,7 +115,7 @@ def edit_user():
 
 
 # _User - Admin Edit
-@api.route('/users/edit/admin/<user_id>', methods=['POST'])
+@api.route('/users/admin/edit/<user_id>/', methods=['POST'])
 @auth.login_required(role='admin')
 def edit_user_admin(user_id):
 	user = User.query.filter_by(id=user_id).first()
@@ -131,26 +133,34 @@ def edit_user_admin(user_id):
 	if (request.json.get('username') is None) or (request.json.get('email') is None):
 		abort(400)  # Missing argument
 
-	if User.query.filter_by(username=username).first() is not None:
+	username_check = User.query.filter_by(username=username).first()
+	if (username_check is not None) and (username_check is not user):
 		abort(400)  # User already exist
 
-	if User.query.filter_by(email=email).first() is not None:
+	email_check = User.query.filter_by(email=email).first()
+	if (email_check is not None) and (email_check is not user):
 		abort(400)  # Email already exist
 
-	return jsonify({'result': '%s, has been updated.' % user.username})
+	user.username = username
+	user.email = email
+
+	db.session.add(user)
+	db.session.commit()
+	return jsonify(user.to_json())
 
 
 # _User - Admin delete
-@api.route('/users/delete/admin/<user_id>', methods=['POST'])
+@api.route('/users/admin/delete/<user_id>/', methods=['POST'])
 @auth.login_required(role='admin')
 def delete_user_admin(user_id):
 	user = User.query.filter_by(id=user_id).first()
+	print(user)
 	username = user.username
 
 	if user is None:
 		abort(400)
 
-	if user.role is not "admin":
+	if user.role != "admin":
 		db.session.delete(user)
 		db.session.commit()
 	else:

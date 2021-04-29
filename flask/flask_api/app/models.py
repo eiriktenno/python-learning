@@ -23,6 +23,14 @@ class User(UserMixin, db.Model):
 	role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), index=True)
 	posts = db.relationship('Post', backref='author', lazy='dynamic')
 
+	def __init__(self, **kwargs):
+		super(User, self).__init__(**kwargs)
+		if self.role is None:
+			default_role = Role.query.filter_by(default=True).first()
+			if default_role is not None:
+				self.role = default_role
+
+
 	@property
 	def password(self):
 		raise AttributeError('Password is not readable.')
@@ -59,7 +67,21 @@ class User(UserMixin, db.Model):
 
 	@staticmethod
 	def generate_fake_data(quantity):
-		pass
+		import forgery_py
+		from sqlalchemy.exc import IntegrityError
+
+		for i in range(quantity):
+			u = User(
+				username=forgery_py.internet.user_name(),
+				email=forgery_py.internet.email_address(),
+				password_hash=forgery_py.lorem_ipsum.word()
+			)
+			db.session.add(u)
+
+			try:
+				db.session.commit()
+			except IntegrityError:
+				db.session.rollback()
 
 
 class AnonymousUser(AnonymousUserMixin):
@@ -78,6 +100,7 @@ class Role(db.Model):
 	__tablename__ = 'roles'
 	id = db.Column(db.Integer, index=True, primary_key=True)
 	name = db.Column(db.String(128), index=True, unique=True)
+	default = db.Column(db.Boolean)
 	users = db.relationship('User', backref='role', lazy='dynamic')
 
 	def to_json(self):
@@ -89,10 +112,9 @@ class Role(db.Model):
 
 	@staticmethod
 	def insert_roles():
-		admin = Role(name='admin')
-
-		moderator = Role(name='moderator')
-		user = Role(name='user')
+		admin = Role(name='admin', default=False)
+		moderator = Role(name='moderator', default=False)
+		user = Role(name='user', default=True)
 		db.session.add_all([admin, moderator, user])
 		db.session.commit()
 
@@ -206,3 +228,5 @@ def generate_fake_data():
 	)
 	db.session.add_all([admin_role, admin_user])
 	db.session.commit()
+
+	User.generate_fake_data(100)
