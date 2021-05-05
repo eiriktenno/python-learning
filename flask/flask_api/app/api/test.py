@@ -197,6 +197,9 @@ def verify_password(email, password):
 
 # ROLES START ---------------------------------------------------------------
 
+# _Roles - Get role
+
+
 # _Roles - List of roles
 @api.route('/roles/', methods=['GET'])
 @auth.login_required(role='admin')
@@ -206,19 +209,51 @@ def list_roles():
 	]
 	return jsonify(role_list)
 
+
 # _Roles - Edit Role
+@api.route('/roles/edit/<role_id>/', methods=['POST'])
+@auth.login_required(role='admin')
+def role_edit(role_id):
+	role = Role.query.filter_by(id=role_id).first()
+
+	if role is None:
+		abort(400)
+
+	name = request.json.get('name')
+
+	if name is None:
+		abort(400)
+
+	name_check = Role.query.filter_by(name=name).first()
+	if (name_check is not None) and (name_check is not name):
+		abort(400)  # Name already used.
+
+	role.name = name
+	db.session.add(role)
+	db.session.commit()
+
+	return jsonify(role.to_json())
 
 
 # _Roles - Delete Role
+@api.route('/roles/delete/<role_id>/', methods=['POST'])
+@auth.login_required(role='admin')
+def role_delete(role_id):
+	return 'Admin: Role Delete.'
 
 
 # _Roles - Add Role
-
+@api.route('/roles/add/', methods=['POST'])
+@auth.login_required(role='admin')
+def role_add():
+	return 'Admin: Role Add.'
 
 # ROLES END ---------------------------------------------------------------
 
 
 # POST START ---------------------------------------------------------------
+
+# _Post - Get post
 
 # _Post - List
 @api.route('/posts/', methods=['GET'])
@@ -298,7 +333,13 @@ def edit_post(slug):
 
 # Category START ---------------------------------------------------------------
 
-# Category - List
+# _Category - Get category
+@api.route('/categories/<category_id>')
+def get_category():
+	return 'Category: Get Category'
+
+
+# _Category - List
 @api.route('/categories/', methods=['GET'])
 def list_categories():
 	category_list = [
