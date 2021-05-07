@@ -347,11 +347,23 @@ def list_categories():
 	]
 	return jsonify(category_list)
 
+
 # _Category - Edit
+@api.route('/categories/edit/<category_id>', methods=['POST'])
+def edit_category(category_id):
+	return 'Category: Edit Category'
+
 
 # _Category - Delete
+@api.route('/categories/delete/<category_id>', mehods=['POST'])
+def delete_category(category_id):
+	return 'Category: Delete Category'
+
 
 # _Category - Add
+@api.route('/categories/add', methods=['POST'])
+def add_category(category_id):
+	return 'Category: Add Category.'
 
 # Category END ---------------------------------------------------------------
 
