@@ -335,8 +335,13 @@ def edit_post(slug):
 
 # _Category - Get category
 @api.route('/categories/<category_id>')
-def get_category():
-	return 'Category: Get Category'
+def get_category(category_id):
+	category = Category.query.filter_by(id=category_id).first()
+
+	if category is None:
+		abort(400)
+
+	return jsonify(category.to_json())
 
 
 # _Category - List
@@ -355,7 +360,7 @@ def edit_category(category_id):
 
 
 # _Category - Delete
-@api.route('/categories/delete/<category_id>', mehods=['POST'])
+@api.route('/categories/delete/<category_id>', methods=['POST'])
 def delete_category(category_id):
 	return 'Category: Delete Category'
 

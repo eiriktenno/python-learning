@@ -125,11 +125,26 @@ class Permission(db.Model):
 	name = db.Column(db.String(128), index=True, unique=True)
 
 	def to_json(self):
-		pass
+		json_permission = {
+			'name': self.name
+		}
+		return json_permission
 
 	@staticmethod
 	def generate_fake_data(quantity):
-		pass
+		import forgery_py
+		from sqlalchemy.exc import IntegrityError
+
+		for i in range(quantity):
+			p = Permission(
+				name=forgery_py.lorem_ipsum.word()
+			)
+			db.session.add(p)
+
+			try:
+				db.session.add(p)
+			except IntegrityError:
+				db.session.rollback()
 
 
 class Post(db.Model):
@@ -160,7 +175,29 @@ class Post(db.Model):
 
 	@staticmethod
 	def generate_fake_data(quantity):
-		pass
+		import forgery_py
+		from sqlalchemy.exc import IntegrityError
+		from random import randint
+		from slugify import slugify
+
+		for i in range(quantity):
+			title = forgery_py.lorem_ipsum.title(randint(1, 4))
+			body = forgery_py.lorem_ipsum.sentences(quantity=100)
+
+			author_random = User.query.filter_by(id=(randint(0, User.query.count()))).first()
+
+			p = Post(
+				title=title,
+				slug=slugify(title),
+				body=body,
+				author=author_random
+			)
+			db.session.add(p)
+
+			try:
+				db.session.commit()
+			except IntegrityError:
+				db.session.rollback()
 
 
 # http --json localhost:5000/api/categories/
@@ -172,14 +209,14 @@ class Category(db.Model):
 	priority = db.Column(db.Integer, default=100)
 
 	# Display name: Display name in navbar
-	display_name = db.Column(db.String(128))
+	display_name = db.Column(db.String(128), unique=True)
 
 	# Custom Template: Settings for custom template or not.
 	custom_template = db.Column(db.Boolean, default=False)
 	custom_template_url = db.Column(db.String(128), default='')
 
 	# list for children to category
-	childes = db.relationship(
+	children = db.relationship(
 		'Category',
 		secondary=category_tree_table,
 		primaryjoin=(category_tree_table.c.parent_id == id),
@@ -194,14 +231,29 @@ class Category(db.Model):
 			'display_name': self.display_name,
 			'custom_template': self.custom_template,
 			'custom_template_url': self.custom_template_url,
-			'childes': [child.display_name for child in self.childes],
+			'children': [child.display_name for child in self.children],
 			'parents': [parent.display_name for parent in self.parents]
 		}
 		return json_category
 
 	@staticmethod
 	def generate_fake_data(quantity):
-		pass
+		import forgery_py
+		from sqlalchemy.exc import IntegrityError
+		from random import randint
+
+		for i in range(quantity):
+			c = Category(
+				priority=randint(1, 100),
+				display_name=forgery_py.lorem_ipsum.word()
+			)
+
+			db.session.add(c)
+
+			try:
+				db.session.commit()
+			except IntegrityError:
+				db.session.rollback()
 
 
 class Tag(db.Model):
@@ -210,15 +262,34 @@ class Tag(db.Model):
 	name = db.Column(db.String(128), index=True, unique=True)
 
 	def to_json(self):
-		pass
+		json_tag = {
+			'name': self.name
+		}
+		return json_tag
 
 	@staticmethod
 	def generate_fake_data(quantity):
-		pass
+		import forgery_py
+		from sqlalchemy.exc import IntegrityError
+
+		for i in range(quantity):
+			t = Tag(
+				name=forgery_py.lorem_ipsum.word()
+			)
+			db.session.add(t)
+
+			try:
+				db.session.commit()
+			except IntegrityError:
+				db.session.rollback()
 
 
 def generate_fake_data():
+	db.drop_all()
+	db.create_all()
+	print("Inserting roles")
 	Role.insert_roles()
+	print("Adding admin user")
 	admin_role = Role.query.filter_by(name='admin').first()
 	admin_user = User(
 		username='admin',
@@ -229,4 +300,15 @@ def generate_fake_data():
 	db.session.add_all([admin_role, admin_user])
 	db.session.commit()
 
+	print("Adding fake users")
 	User.generate_fake_data(100)
+	print("Adding fake permissions")
+	Permission.generate_fake_data(10)
+	print("Adding fake categories")
+	Category.generate_fake_data(10)
+	print("Adding fake tags")
+	Tag.generate_fake_data(10)
+	print("Adding fake posts")
+	Post.generate_fake_data(20)
+
+	print("Done")
