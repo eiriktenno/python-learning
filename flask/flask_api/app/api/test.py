@@ -239,14 +239,36 @@ def role_edit(role_id):
 @api.route('/roles/delete/<role_id>/', methods=['POST'])
 @auth.login_required(role='admin')
 def role_delete(role_id):
-	return 'Admin: Role Delete.'
+	role = Role.query.filter_by(id=role_id).first()
+
+	if role is None:
+		abort(400)
+
+	if role.name is 'admin':
+		abort(400)
+
+	name = role.name
+	db.session.delete(role)
+	db.session.commit()
+
+	return {'result': 'Role %s, been deleted' % name}
 
 
 # _Roles - Add Role
 @api.route('/roles/add/', methods=['POST'])
 @auth.login_required(role='admin')
 def role_add():
-	return 'Admin: Role Add.'
+	name = request.json.get('name')
+	if name is None:
+		abort(400)  # Missing argument
+	if Role.query.filter_by(name=name).first() is not None:
+		abort(400)  # User already exist
+	role = Role(
+		name=name
+	)
+	db.session.add(role)
+	db.session.commit()
+	return jsonify(role.to_json())
 
 # ROLES END ---------------------------------------------------------------
 
@@ -254,6 +276,12 @@ def role_add():
 # POST START ---------------------------------------------------------------
 
 # _Post - Get post
+@api.route('/posts/<post_id>', methods=['GET'])
+def get_post(post_id):
+	post = Post.query.filter_by(id=post_id).first()
+	if post is None:
+		abort(400)
+	return jsonify(post.to_json())
 
 # _Post - List
 @api.route('/posts/', methods=['GET'])
@@ -262,7 +290,7 @@ def list_posts():
 	post_list = [
 		post.to_json() for post in Post.query.all()
 	]
-	return post_list
+	return jsonify(post_list)
 
 
 # _Post - New
@@ -327,7 +355,21 @@ def edit_post(slug):
 
 
 # _Post - Delete
+@api.route('/posts/delete/<post_id>/', methods=['POST'])
+def delete_post(post_id):
+	post = Post.query.filter_by(id=post_id).first()
 
+	if post is None:
+		abort(400)
+
+	title = post.title
+	db.session.delete(post)
+	db.session.commit()
+
+	return {'result': 'Post %s, been deleted' % title}
+
+
+# _Post - Admin Delete ???
 
 # POST END ---------------------------------------------------------------
 
@@ -356,6 +398,15 @@ def list_categories():
 # _Category - Edit
 @api.route('/categories/edit/<category_id>', methods=['POST'])
 def edit_category(category_id):
+	priority = request.json.get('priority')
+	display_name = request.json.get('display_name')
+	custom_template = request.json.get('custom_template')
+	custom_url = request.json.get('custom_url')
+	# children = [] - LIST MORE WORK
+	# parents = [] - LIST MORE WORK
+
+	category = Category.query_filter_by(id=category_id).first()
+
 	return 'Category: Edit Category'
 
 
